@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>SMK RUNNER LEGEND</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(135deg, #70e1f5, #ffd194);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Poppins', sans-serif;
+      overflow: hidden;
+    }
+    canvas {
+      background: url('assets/image/BG.png') no-repeat center/cover;
+      border: 3px solid #000;
+      display: none;
+      border-radius: 10px;
+    }
+
+    #loadingScreen, #mainMenu, #optionScreen, #overlay {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+    }
+
+    /* Loading Screen */
+    #loadingScreen { background: black; color: white; font-size: 30px; }
+
+    /* Main Menu */
+    #mainMenu {
+      background: linear-gradient(180deg, #2c3e50, #3498db);
+      color: white;
+      text-align: center;
+    }
+    #gameLogo {
+      width: 200px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      margin-bottom: 25px; animation: floatLogo 3s ease-in-out infinite;
+    }
+    @keyframes floatLogo {
+      0% { transform: translateY(0); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0); }
+    }
+    #mainMenu h1 { font-size: 60px; margin-bottom: 40px; animation: glow 2s ease-in-out infinite alternate; }
+    @keyframes glow {
+      from { text-shadow: 0 0 10px #fff, 0 0 20px #0ff; }
+      to { text-shadow: 0 0 25px #ff0, 0 0 50px #f0f; }
+    }
+    .menu-button {
+      padding: 15px 50px; margin: 10px; font-size: 22px;
+      color: #fff; background: linear-gradient(45deg, #16a085, #27ae60);
+      border: none; border-radius: 50px; cursor: pointer; transition: all 0.3s ease;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    .menu-button:hover {
+      transform: scale(1.1);
+      background: linear-gradient(45deg, #1abc9c, #2ecc71);
+    }
+
+    #highScore { font-size: 20px; margin-top: 25px; color: #f1f1f1; }
+
+    /* Option Screen */
+    #optionScreen {
+      background: rgba(0,0,0,0.9); color: white; display: none; text-align: left; padding: 20px;
+    }
+    #optionScreen h2 { font-size: 36px; color: #00ffff; text-shadow: 0 0 10px #00ffff; margin-bottom: 20px; }
+    .option-item {
+      display: flex; flex-direction: column; align-items: center;
+      background: rgba(255,255,255,0.05);
+      border: 2px solid #00ffff; border-radius: 15px;
+      padding: 15px 25px; margin: 10px; width: 250px; text-align: center;
+    }
+    .option-item select {
+      font-size: 18px; padding: 8px 12px;
+      color: white; background-color: black;
+      border: 2px solid #00ffff; border-radius: 10px;
+    }
+
+    #overlay {
+      background: rgba(0,0,0,0.8); color: white; display: none; text-align: center;
+      font-size: 30px; text-shadow: 2px 2px 4px #000; z-index: 10;
+    }
+    #overlay button {
+      margin-top: 20px;
+      padding: 10px 25px;
+      background: #27ae60;
+      border: none;
+      border-radius: 30px;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    @keyframes resizeCanvas {}
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas" width="800" height="400"></canvas>
+
+  <div id="loadingScreen"><h2>Loading...</h2></div>
+
+  <div id="mainMenu">
+    <img id="gameLogo" src="assets/image/Logo.jpg" alt="Game Logo">
+    <h1>SMK RUNNER LEGEND</h1>
+    <button class="menu-button" id="playBtn">Mulai Main</button>
+    <button class="menu-button" id="optionBtn">Pengaturan</button>
+    <div id="highScore"></div>
+  </div>
+
+  <div id="optionScreen">
+    <h2>Pengaturan ⚙️</h2>
+    <div class="option-item">
+      <label>🎵 Suara:</label>
+      <select id="soundOption">
+        <option value="on">On</option>
+        <option value="off">Off</option>
+      </select>
+    </div>
+    <div class="option-item">
+      <label>🔥 Kesulitan:</label>
+      <select id="difficulty">
+        <option value="easy">Easy</option>
+        <option value="normal" selected>Normal</option>
+        <option value="hard">Hard</option>
+        <option value="veryhard">Very Hard</option>
+      </select>
+    </div>
+    <div class="option-item">
+      <label>🎶 Lagu BGM:</label>
+      <select id="bgmSelect">
+        <option value="assets/audio/Gone gone gone.mp3">Gone gone gone</option>
+        <option value="assets/audio/Night Changes.mp3">Night Changes</option>
+        <option value="assets/audio/Take me home.mp3">Take me home</option>
+      </select>
+    </div>
+    <button id="backBtn">Kembali</button>
+  </div>
+
+  <div id="overlay">
+    <h1>💥 GAME OVER 💥</h1>
+    <p>Tap layar untuk main lagi</p>
+    <button onclick="backToMenu()">🔙 Kembali ke Main Menu</button>
+  </div>
+
+  <script>
+  const canvas = document.getElementById("gameCanvas");
+  const ctx = canvas.getContext("2d");
+  const mainMenu = document.getElementById("mainMenu");
+  const loadingScreen = document.getElementById("loadingScreen");
+  const optionScreen = document.getElementById("optionScreen");
+  const overlay = document.getElementById("overlay");
+  const highScoreDisplay = document.getElementById("highScore");
+  const difficultySelect = document.getElementById("difficulty");
+  const soundOption = document.getElementById("soundOption");
+  const bgmSelect = document.getElementById("bgmSelect");
+
+  let highScore = localStorage.getItem("highScore") || 0;
+  highScoreDisplay.innerText = "High Score: " + highScore;
+
+  // Audio
+  let bgm = new Audio();
+  let jumpSound = new Audio("assets/audio/jump .mp3");
+  let gameOverSound = new Audio("assets/audio/game over.mp3");
+  bgm.loop = true; bgm.volume = 0.5;
+  jumpSound.volume = 0.3; gameOverSound.volume = 0.6;
+
+  function playBGM() {
+    if (!isSoundOn()) return;
+    bgm.src = bgmSelect.value;
+    bgm.play().catch(()=>{});
+  }
+  function stopBGM() { bgm.pause(); bgm.currentTime = 0; }
+  function isSoundOn() { return soundOption.value === "on"; }
+
+  setTimeout(()=>{ loadingScreen.style.display="none"; mainMenu.style.display="flex"; }, 2000);
+
+  document.getElementById("optionBtn").onclick = ()=>{ mainMenu.style.display="none"; optionScreen.style.display="flex"; };
+  document.getElementById("backBtn").onclick = ()=>{ optionScreen.style.display="none"; mainMenu.style.display="flex"; };
+  document.getElementById("playBtn").onclick = startGame;
+
+  let player, obstacles = [], frame, score, gameOver, difficulty;
+  function resizeCanvas(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight * 0.85;
+  }
+  window.addEventListener("resize", resizeCanvas);
+  resizeCanvas();
+
+  function initGame() {
+    difficulty = difficultySelect.value;
+    let baseSpeed = 6, obstacleCount = 1, spawnRate = 300, playerMaxJump = 1;
+    if (difficulty==="hard") { baseSpeed=8; playerMaxJump=2; }
+    if (difficulty==="veryhard") { baseSpeed=10; spawnRate=150; playerMaxJump=2; }
+
+    player = { x:100, y:canvas.height-120, width:90, height:90, vy:0, gravity:0.8, jumpPower:-15, grounded:true, jumpCount:0, maxJumps:playerMaxJump };
+    obstacles = [{x:canvas.width+200, y:canvas.height-70, width:75, height:80, speed:baseSpeed}];
+    frame=0; score=0; gameOver=false;
+  }
+
+  function startGame(){
+    mainMenu.style.display="none"; optionScreen.style.display="none"; overlay.style.display="none";
+    canvas.style.display="block"; initGame();
+    if(isSoundOn()) playBGM();
+    animate();
+  }
+
+  function backToMenu(){
+    overlay.style.display="none"; canvas.style.display="none"; mainMenu.style.display="flex";
+    stopBGM();
+  }
+
+  function update(){
+    frame++; player.y += player.vy; player.vy += player.gravity;
+    if (player.y > canvas.height-120){ player.y=canvas.height-120; player.vy=0; player.grounded=true; player.jumpCount=0; }
+
+    obstacles.forEach(obs=>{
+      obs.x -= obs.speed;
+      if (obs.x+obs.width<0){ obs.x = canvas.width + Math.random()*250; score++; }
+      const hit = player.x<obs.x+obs.width && player.x+player.width>obs.x && player.y+player.height>obs.y;
+      if(hit){ gameOver=true; overlay.style.display="flex"; stopBGM(); if(isSoundOn()) gameOverSound.play(); if(score>highScore){highScore=score;localStorage.setItem("highScore",highScore);} }
+    });
+  }
+
+  function drawPlayer(){ ctx.fillStyle="red"; ctx.fillRect(player.x, player.y, player.width, player.height); }
+  function drawObstacles(){ ctx.fillStyle="#333"; obstacles.forEach(o=>ctx.fillRect(o.x,o.y,o.width,o.height)); }
+  function drawScore(){ ctx.fillStyle="black"; ctx.font="20px Arial"; ctx.fillText("Score: "+score,10,30); ctx.fillText("High Score: "+highScore,10,55); }
+
+  function animate(){
+    if(gameOver)return;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    drawPlayer(); drawObstacles(); drawScore(); update();
+    requestAnimationFrame(animate);
+  }
+
+  canvas.addEventListener("touchstart",()=>{
+    if(!gameOver){
+      if(player.grounded||player.jumpCount<player.maxJumps){
+        player.vy=player.jumpPower; player.grounded=false; player.jumpCount++;
+        if(isSoundOn()) jumpSound.play();
+      }
+    } else startGame();
+  });
+  </script>
+</body>
+</html>
