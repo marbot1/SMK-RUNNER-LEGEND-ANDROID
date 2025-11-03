@@ -19,40 +19,44 @@
       background: url('assets/image/BG.png') no-repeat center/cover;
       border: 3px solid #000;
       display: none;
-      border-radius: 10px;
+      border-radius: 12px;
     }
 
     #loadingScreen, #mainMenu, #optionScreen, #overlay {
-      position: absolute; inset: 0;
-      display: flex; flex-direction: column;
-      justify-content: center; align-items: center;
-    }
-
-    /* Loading Screen */
-    #loadingScreen { background: black; color: white; font-size: 30px; }
-
-    /* Main Menu */
-    #mainMenu {
-      background: linear-gradient(180deg, #2c3e50, #3498db);
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       color: white;
       text-align: center;
     }
+
+    #loadingScreen { background: black; color: white; font-size: 30px; }
+    #mainMenu { background: linear-gradient(180deg, #2c3e50, #3498db); }
+    #optionScreen { background: rgba(0,0,0,0.9); display: none; }
+    #overlay { background: rgba(0,0,0,0.8); display: none; z-index: 10; }
+
     #gameLogo {
-      width: 200px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-      margin-bottom: 25px; animation: floatLogo 3s ease-in-out infinite;
+      width: 200px; border-radius: 15px; margin-bottom: 25px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      animation: floatLogo 3s ease-in-out infinite;
     }
     @keyframes floatLogo {
       0% { transform: translateY(0); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0); }
     }
-    #mainMenu h1 { font-size: 60px; margin-bottom: 40px; animation: glow 2s ease-in-out infinite alternate; }
-    @keyframes glow {
-      from { text-shadow: 0 0 10px #fff, 0 0 20px #0ff; }
-      to { text-shadow: 0 0 25px #ff0, 0 0 50px #f0f; }
-    }
+
     .menu-button {
-      padding: 15px 50px; margin: 10px; font-size: 22px;
-      color: #fff; background: linear-gradient(45deg, #16a085, #27ae60);
-      border: none; border-radius: 50px; cursor: pointer; transition: all 0.3s ease;
+      padding: 15px 50px;
+      margin: 10px;
+      font-size: 22px;
+      color: #fff;
+      background: linear-gradient(45deg, #16a085, #27ae60);
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: 0.3s;
       box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     }
     .menu-button:hover {
@@ -60,45 +64,31 @@
       background: linear-gradient(45deg, #1abc9c, #2ecc71);
     }
 
-    #highScore { font-size: 20px; margin-top: 25px; color: #f1f1f1; }
+    #overlay h1 { font-size: 60px; color: red; text-shadow: 2px 2px 4px black; }
+    #overlay p { font-size: 20px; color: white; margin-top: 10px; }
 
-    /* Option Screen */
-    #optionScreen {
-      background: rgba(0,0,0,0.9); color: white; display: none; text-align: left; padding: 20px;
-    }
-    #optionScreen h2 { font-size: 36px; color: #00ffff; text-shadow: 0 0 10px #00ffff; margin-bottom: 20px; }
-    .option-item {
-      display: flex; flex-direction: column; align-items: center;
-      background: rgba(255,255,255,0.05);
-      border: 2px solid #00ffff; border-radius: 15px;
-      padding: 15px 25px; margin: 10px; width: 250px; text-align: center;
-    }
-    .option-item select {
-      font-size: 18px; padding: 8px 12px;
-      color: white; background-color: black;
-      border: 2px solid #00ffff; border-radius: 10px;
-    }
-
-    #overlay {
-      background: rgba(0,0,0,0.8); color: white; display: none; text-align: center;
-      font-size: 30px; text-shadow: 2px 2px 4px #000; z-index: 10;
-    }
-    #overlay button {
-      margin-top: 20px;
-      padding: 10px 25px;
-      background: #27ae60;
+    /* Tombol kembali ke menu */
+    #backToMenu {
+      position: absolute;
+      bottom: 20px; right: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
       border: none;
-      border-radius: 30px;
+      border-radius: 10px;
+      background: rgba(0,0,0,0.7);
       color: white;
-      font-size: 20px;
-      cursor: pointer;
+      display: none;
+      z-index: 20;
     }
-
-    @keyframes resizeCanvas {}
+    #backToMenu:active {
+      transform: scale(0.95);
+      background: rgba(0,0,0,0.9);
+    }
   </style>
 </head>
 <body>
-  <canvas id="gameCanvas" width="800" height="400"></canvas>
+
+  <canvas id="gameCanvas"></canvas>
 
   <div id="loadingScreen"><h2>Loading...</h2></div>
 
@@ -112,14 +102,11 @@
 
   <div id="optionScreen">
     <h2>Pengaturan ⚙️</h2>
-    <div class="option-item">
+    <div>
       <label>🎵 Suara:</label>
-      <select id="soundOption">
-        <option value="on">On</option>
-        <option value="off">Off</option>
-      </select>
+      <select id="soundOption"><option value="on">On</option><option value="off">Off</option></select>
     </div>
-    <div class="option-item">
+    <div>
       <label>🔥 Kesulitan:</label>
       <select id="difficulty">
         <option value="easy">Easy</option>
@@ -128,121 +115,173 @@
         <option value="veryhard">Very Hard</option>
       </select>
     </div>
-    <div class="option-item">
-      <label>🎶 Lagu BGM:</label>
+    <div>
+      <label>🎶 Pilih Lagu BGM:</label>
       <select id="bgmSelect">
         <option value="assets/audio/Gone gone gone.mp3">Gone gone gone</option>
-        <option value="assets/audio/Night Changes.mp3">Night Changes</option>
         <option value="assets/audio/Take me home.mp3">Take me home</option>
+        <option value="assets/audio/Night Changes.mp3">Night Changes</option>
+        <option value="assets/audio/Best friend.mp3">Best friend</option>
+        <option value="assets/audio/everything u are.mp3">everything u are</option>
+        <option value="assets/audio/Backburner.mp3">Backburner</option>
+        <option value="assets/audio/Someone To You.mp3">Someone To You</option>
+        <option value="assets/audio/Lampu kuning.mp3">lampu kuning</option>
+        <option value="assets/audio/tresno tekan mati.mp3">tresno tekan mati</option>
+        <option value="assets/audio/Bapak Mulyono Raja Tipu Tipu.mp3">Bapak Mulyono Raja Tipu Tipu</option>
       </select>
     </div>
     <button id="backBtn">Kembali</button>
   </div>
 
   <div id="overlay">
-    <h1>💥 GAME OVER 💥</h1>
-    <p>Tap layar untuk main lagi</p>
-    <button onclick="backToMenu()">🔙 Kembali ke Main Menu</button>
+    <h1>GAME OVER</h1>
+    <p>Tap untuk mulai lagi<br>atau tekan tombol di bawah untuk kembali ke menu</p>
   </div>
 
-  <script>
-  const canvas = document.getElementById("gameCanvas");
-  const ctx = canvas.getContext("2d");
-  const mainMenu = document.getElementById("mainMenu");
-  const loadingScreen = document.getElementById("loadingScreen");
-  const optionScreen = document.getElementById("optionScreen");
-  const overlay = document.getElementById("overlay");
-  const highScoreDisplay = document.getElementById("highScore");
-  const difficultySelect = document.getElementById("difficulty");
-  const soundOption = document.getElementById("soundOption");
-  const bgmSelect = document.getElementById("bgmSelect");
+  <button id="backToMenu">🏠 Kembali ke Menu</button>
 
-  let highScore = localStorage.getItem("highScore") || 0;
-  highScoreDisplay.innerText = "High Score: " + highScore;
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+const mainMenu = document.getElementById("mainMenu");
+const loadingScreen = document.getElementById("loadingScreen");
+const optionScreen = document.getElementById("optionScreen");
+const overlay = document.getElementById("overlay");
+const backToMenuBtn = document.getElementById("backToMenu");
+const highScoreDisplay = document.getElementById("highScore");
+const difficultySelect = document.getElementById("difficulty");
+const soundOption = document.getElementById("soundOption");
+const bgmSelect = document.getElementById("bgmSelect");
 
-  // Audio
-  let bgm = new Audio();
-  let jumpSound = new Audio("assets/audio/jump .mp3");
-  let gameOverSound = new Audio("assets/audio/game over.mp3");
-  bgm.loop = true; bgm.volume = 0.5;
-  jumpSound.volume = 0.3; gameOverSound.volume = 0.6;
+let bgm = new Audio();
+let jumpSound = new Audio("assets/audio/jump.mp3");
+let gameOverSound = new Audio("assets/audio/game over.mp3");
+bgm.loop = true;
+bgm.volume = 0.5;
+jumpSound.volume = 0.2;
+gameOverSound.volume = 0.6;
 
-  function playBGM() {
-    if (!isSoundOn()) return;
-    bgm.src = bgmSelect.value;
-    bgm.play().catch(()=>{});
-  }
-  function stopBGM() { bgm.pause(); bgm.currentTime = 0; }
-  function isSoundOn() { return soundOption.value === "on"; }
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight * 0.85;
+}
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
 
-  setTimeout(()=>{ loadingScreen.style.display="none"; mainMenu.style.display="flex"; }, 2000);
+let highScore = localStorage.getItem("highScore") || 0;
+highScoreDisplay.innerText = "High Score: " + highScore;
 
-  document.getElementById("optionBtn").onclick = ()=>{ mainMenu.style.display="none"; optionScreen.style.display="flex"; };
-  document.getElementById("backBtn").onclick = ()=>{ optionScreen.style.display="none"; mainMenu.style.display="flex"; };
-  document.getElementById("playBtn").onclick = startGame;
+setTimeout(() => {
+  loadingScreen.style.display = "none";
+  mainMenu.style.display = "flex";
+}, 2000);
 
-  let player, obstacles = [], frame, score, gameOver, difficulty;
-  function resizeCanvas(){
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight * 0.85;
-  }
-  window.addEventListener("resize", resizeCanvas);
-  resizeCanvas();
+document.getElementById("optionBtn").onclick = () => {
+  mainMenu.style.display = "none";
+  optionScreen.style.display = "flex";
+};
+document.getElementById("backBtn").onclick = () => {
+  optionScreen.style.display = "none";
+  mainMenu.style.display = "flex";
+};
+document.getElementById("playBtn").onclick = startGame;
+backToMenuBtn.onclick = () => {
+  bgm.pause();
+  mainMenu.style.display = "flex";
+  canvas.style.display = "none";
+  backToMenuBtn.style.display = "none";
+};
 
-  function initGame() {
-    difficulty = difficultySelect.value;
-    let baseSpeed = 6, obstacleCount = 1, spawnRate = 300, playerMaxJump = 1;
-    if (difficulty==="hard") { baseSpeed=8; playerMaxJump=2; }
-    if (difficulty==="veryhard") { baseSpeed=10; spawnRate=150; playerMaxJump=2; }
+const images = {
+  run1: new Image(), run2: new Image(), run3: new Image(),
+  jump1: new Image(), jump2: new Image(), jump3: new Image(),
+  obstacle: new Image()
+};
+images.run1.src = "assets/image/SMK_RUN_1.png";
+images.run2.src = "assets/image/SMK_RUN_2.png";
+images.run3.src = "assets/image/SMK_RUN_3.png";
+images.jump1.src = "assets/image/SMK_JUMP_1.png";
+images.jump2.src = "assets/image/SMK_JUMP_2.png";
+images.jump3.src = "assets/image/SMK_JUMP_3.png";
+images.obstacle.src = "assets/image/tongsampah.png";
 
-    player = { x:100, y:canvas.height-120, width:90, height:90, vy:0, gravity:0.8, jumpPower:-15, grounded:true, jumpCount:0, maxJumps:playerMaxJump };
-    obstacles = [{x:canvas.width+200, y:canvas.height-70, width:75, height:80, speed:baseSpeed}];
-    frame=0; score=0; gameOver=false;
-  }
+let player, obstacles = [], frame, score, gameOver, difficulty;
 
-  function startGame(){
-    mainMenu.style.display="none"; optionScreen.style.display="none"; overlay.style.display="none";
-    canvas.style.display="block"; initGame();
-    if(isSoundOn()) playBGM();
-    animate();
-  }
+function isSoundOn() {
+  return soundOption.value === "on";
+}
+function playBGM() {
+  if (!isSoundOn()) return;
+  bgm.src = bgmSelect.value;
+  bgm.play().catch(()=>{});
+}
+function stopBGM() {
+  bgm.pause(); bgm.currentTime = 0;
+}
 
-  function backToMenu(){
-    overlay.style.display="none"; canvas.style.display="none"; mainMenu.style.display="flex";
-    stopBGM();
-  }
+function initGame() {
+  difficulty = difficultySelect.value;
+  let baseSpeed = 6, obstacleCount = 1, obstacleSpawnRate = 300, playerMaxJump = 1;
+  if (difficulty === "hard") { baseSpeed=8; obstacleCount=2; obstacleSpawnRate=200; playerMaxJump=2; }
+  else if (difficulty === "veryhard") { baseSpeed=10; obstacleCount=3; obstacleSpawnRate=150; playerMaxJump=2; }
 
-  function update(){
-    frame++; player.y += player.vy; player.vy += player.gravity;
-    if (player.y > canvas.height-120){ player.y=canvas.height-120; player.vy=0; player.grounded=true; player.jumpCount=0; }
+  player = { x: 100, y: canvas.height-150, width: 90, height: 90, vy: 0, gravity: 0.8, jumpPower: -13, grounded: true, jumpCount: 0, maxJumps: playerMaxJump };
+  obstacles = [];
+  for (let i=0;i<obstacleCount;i++) obstacles.push({x:canvas.width+i*obstacleSpawnRate, y:canvas.height-120, width:75, height:80, speed:baseSpeed});
+  frame=0; score=0; gameOver=false;
+}
 
-    obstacles.forEach(obs=>{
-      obs.x -= obs.speed;
-      if (obs.x+obs.width<0){ obs.x = canvas.width + Math.random()*250; score++; }
-      const hit = player.x<obs.x+obs.width && player.x+player.width>obs.x && player.y+player.height>obs.y;
-      if(hit){ gameOver=true; overlay.style.display="flex"; stopBGM(); if(isSoundOn()) gameOverSound.play(); if(score>highScore){highScore=score;localStorage.setItem("highScore",highScore);} }
-    });
-  }
+function startGame() {
+  mainMenu.style.display = "none";
+  canvas.style.display = "block";
+  overlay.style.display = "none";
+  backToMenuBtn.style.display = "block";
+  initGame();
+  if (isSoundOn()) playBGM();
+  animate();
+}
 
-  function drawPlayer(){ ctx.fillStyle="red"; ctx.fillRect(player.x, player.y, player.width, player.height); }
-  function drawObstacles(){ ctx.fillStyle="#333"; obstacles.forEach(o=>ctx.fillRect(o.x,o.y,o.width,o.height)); }
-  function drawScore(){ ctx.fillStyle="black"; ctx.font="20px Arial"; ctx.fillText("Score: "+score,10,30); ctx.fillText("High Score: "+highScore,10,55); }
+function drawPlayer() {
+  const sprite = player.grounded
+    ? [images.run1, images.run2, images.run3][Math.floor(frame/10)%3]
+    : [images.jump1, images.jump2, images.jump3][Math.floor(frame/10)%3];
+  ctx.drawImage(sprite, player.x, player.y, player.width, player.height);
+}
+function drawObstacles() {
+  obstacles.forEach(obs=>ctx.drawImage(images.obstacle, obs.x, obs.y, obs.width, obs.height));
+}
+function drawScore() {
+  ctx.fillStyle="black"; ctx.font="20px Arial";
+  ctx.fillText("Score: "+score,10,30);
+  ctx.fillText("High Score: "+highScore,10,55);
+}
 
-  function animate(){
-    if(gameOver)return;
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    drawPlayer(); drawObstacles(); drawScore(); update();
-    requestAnimationFrame(animate);
-  }
-
-  canvas.addEventListener("touchstart",()=>{
-    if(!gameOver){
-      if(player.grounded||player.jumpCount<player.maxJumps){
-        player.vy=player.jumpPower; player.grounded=false; player.jumpCount++;
-        if(isSoundOn()) jumpSound.play();
-      }
-    } else startGame();
+function update() {
+  frame++; player.y+=player.vy; player.vy+=player.gravity;
+  if (player.y+player.height>canvas.height-50){ player.y=canvas.height-player.height-50; player.vy=0; player.grounded=true; player.jumpCount=0; }
+  obstacles.forEach(obs=>{
+    obs.x-=obs.speed;
+    if(obs.x+obs.width<0){obs.x=canvas.width+Math.random()*250;score++;}
+    const hit = player.x<obs.x+obs.width && player.x+player.width>obs.x && player.y<obs.y+obs.height && player.y+player.height>obs.y;
+    if(hit){gameOver=true; overlay.style.display="flex"; backToMenuBtn.style.display="block"; if(isSoundOn()){stopBGM();gameOverSound.play();} if(score>highScore){highScore=score;localStorage.setItem("highScore",highScore);} }
   });
-  </script>
+}
+
+function animate() {
+  if (gameOver) return;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  update(); drawPlayer(); drawObstacles(); drawScore();
+  requestAnimationFrame(animate);
+}
+
+canvas.addEventListener("touchstart", ()=>{
+  if (!gameOver) {
+    if (player.grounded || player.jumpCount<player.maxJumps) {
+      player.vy=player.jumpPower; player.grounded=false; player.jumpCount++;
+      if (isSoundOn()) jumpSound.play();
+    }
+  } else startGame();
+});
+</script>
 </body>
 </html>
